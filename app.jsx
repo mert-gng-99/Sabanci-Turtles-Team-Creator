@@ -1,4 +1,3 @@
-
 /* Global React hooks (React loaded via UMD) */
 const { useState, useEffect, useRef } = React;
 
@@ -115,19 +114,25 @@ function HalisahaKadro() {
 
   const FieldPlayer = ({ player, team, index, onMove }) => {
     const [isDragging, setIsDragging] = useState(false);
-    const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+    const startPosRef = useRef({ x: 0, y: 0 });
 
     const handleMouseDown = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       setIsDragging(true);
-      setStartPos({ x: e.clientX, y: e.clientY });
+      startPosRef.current = { x: e.clientX, y: e.clientY };
     };
 
     const handleMouseMove = (e) => {
       if (!isDragging) return;
-      const deltaX = ((e.clientX - startPos.x) / window.innerWidth) * 100;
-      const deltaY = ((e.clientY - startPos.y) / window.innerHeight) * 100;
+      const fieldElement = document.querySelector('.relative.w-full.aspect-\\[3\\/2\\]');
+      if (!fieldElement) return;
+      
+      const rect = fieldElement.getBoundingClientRect();
+      const deltaX = ((e.clientX - startPosRef.current.x) / rect.width) * 100;
+      const deltaY = ((e.clientY - startPosRef.current.y) / rect.height) * 100;
       onMove(team, index, deltaX, deltaY);
-      setStartPos({ x: e.clientX, y: e.clientY });
+      startPosRef.current = { x: e.clientX, y: e.clientY };
     };
 
     const handleMouseUp = () => {
@@ -143,22 +148,28 @@ function HalisahaKadro() {
           window.removeEventListener('mouseup', handleMouseUp);
         };
       }
-    }, [isDragging, startPos]);
+    }, [isDragging]);
 
     const handleTouchStart = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const touch = e.touches[0];
       setIsDragging(true);
-      setStartPos({ x: touch.clientX, y: touch.clientY });
+      startPosRef.current = { x: touch.clientX, y: touch.clientY };
     };
 
     const handleTouchMove = (e) => {
       if (!isDragging) return;
       e.preventDefault();
       const touch = e.touches[0];
-      const deltaX = ((touch.clientX - startPos.x) / window.innerWidth) * 100;
-      const deltaY = ((touch.clientY - startPos.y) / window.innerHeight) * 100;
+      const fieldElement = document.querySelector('.relative.w-full.aspect-\\[3\\/2\\]');
+      if (!fieldElement) return;
+      
+      const rect = fieldElement.getBoundingClientRect();
+      const deltaX = ((touch.clientX - startPosRef.current.x) / rect.width) * 100;
+      const deltaY = ((touch.clientY - startPosRef.current.y) / rect.height) * 100;
       onMove(team, index, deltaX, deltaY);
-      setStartPos({ x: touch.clientX, y: touch.clientY });
+      startPosRef.current = { x: touch.clientX, y: touch.clientY };
     };
 
     const handleTouchEnd = () => {
@@ -171,7 +182,8 @@ function HalisahaKadro() {
         style={{ 
           left: `${player.x}%`, 
           top: `${player.y}%`,
-          transform: 'translate(-50%, -50%)'
+          transform: 'translate(-50%, -50%)',
+          touchAction: 'none'
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
