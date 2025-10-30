@@ -1,7 +1,7 @@
 /* Global React hooks (React loaded via UMD) */
 const { useState, useEffect, useRef } = React;
 
-/* Minimal icon components to replace lucide-react */
+
 function Users(props) {
   return React.createElement(
     'svg',
@@ -36,6 +36,7 @@ function HalisahaKadro() {
   const [team2, setTeam2] = useState([]);
   const [draggedPlayer, setDraggedPlayer] = useState(null);
   const [draggedFrom, setDraggedFrom] = useState(null);
+  const fieldRef = useRef(null);
 
   const addPlayer = () => {
     if (newPlayer.trim()) {
@@ -72,21 +73,21 @@ function HalisahaKadro() {
     setDraggedFrom(null);
   };
 
-  const movePlayer = (team, index, deltaX, deltaY) => {
+  const movePlayer = (team, index, newX, newY) => {
     if (team === 'team1') {
       const updated = [...team1];
       updated[index] = {
         ...updated[index],
-        x: Math.max(0, Math.min(100, updated[index].x + deltaX)),
-        y: Math.max(0, Math.min(100, updated[index].y + deltaY))
+        x: Math.max(0, Math.min(100, newX)),
+        y: Math.max(0, Math.min(100, newY))
       };
       setTeam1(updated);
     } else {
       const updated = [...team2];
       updated[index] = {
         ...updated[index],
-        x: Math.max(0, Math.min(100, updated[index].x + deltaX)),
-        y: Math.max(0, Math.min(100, updated[index].y + deltaY))
+        x: Math.max(0, Math.min(100, newX)),
+        y: Math.max(0, Math.min(100, newY))
       };
       setTeam2(updated);
     }
@@ -114,88 +115,116 @@ function HalisahaKadro() {
 
   const FieldPlayer = ({ player, team, index, onMove }) => {
     const [isDragging, setIsDragging] = useState(false);
-    const startPosRef = useRef({ x: 0, y: 0 });
+    const dragStartPos = useRef({ x: 0, y: 0 });
+    const playerStartPos = useRef({ x: 0, y: 0 });
 
+    const getFieldRect = () => {
+      if (fieldRef.current) {
+        return fieldRef.current.getBoundingClientRect();
+      }
+      return null;
+    };
+
+    const handleStart = (clientX, clientY) => {
+      const rect = getFieldRect();
+      if (!rect) return;
+      
+      setIsDragging(true);
+      dragStartPos.current = { x: clientX, y: clientY };
+      playerStartPos.current = { x: player.x, y: player.y };
+    };
+
+    const handleMove = (clientX, clientY) => {
+      if (!isDragging) return;
+      const rect = getFieldRect();
+      if (!rect) return;
+
+      const deltaX = clientX - dragStartPos.current.x;
+      const deltaY = clientY - dragStartPos.current.y;
+      
+      const deltaXPercent = (deltaX / rect.width) * 100;
+      const deltaYPercent = (deltaY / rect.height) * 100;
+      
+      const newX = playerStartPos.current.x + deltaXPercent;
+      const newY = playerStartPos.current.y + deltaYPercent;
+      
+      onMove(team, index, newX, newY);
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+    };
+
+    // Mouse events
     const handleMouseDown = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      setIsDragging(true);
-      startPosRef.current = { x: e.clientX, y: e.clientY };
+      handleStart(e.clientX, e.clientY);
     };
 
     const handleMouseMove = (e) => {
-      if (!isDragging) return;
-      const fieldElement = document.querySelector('.relative.w-full.aspect-\\[3\\/2\\]');
-      if (!fieldElement) return;
-      
-      const rect = fieldElement.getBoundingClientRect();
-      const deltaX = ((e.clientX - startPosRef.current.x) / rect.width) * 100;
-      const deltaY = ((e.clientY - startPosRef.current.y) / rect.height) * 100;
-      onMove(team, index, deltaX, deltaY);
-      startPosRef.current = { x: e.clientX, y: e.clientY };
+      handleMove(e.clientX, e.clientY);
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
+      handleEnd();
+    };
+
+    // Touch events
+    const handleTouchStart = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      handleMove(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchEnd = () => {
+      handleEnd();
     };
 
     useEffect(() => {
       if (isDragging) {
         window.addEventListener('mousemove', handleMouseMove);
         window.addEventListener('mouseup', handleMouseUp);
+        window.addEventListener('touchmove', handleTouchMove, { passive: false });
+        window.addEventListener('touchend', handleTouchEnd);
+        
         return () => {
           window.removeEventListener('mousemove', handleMouseMove);
           window.removeEventListener('mouseup', handleMouseUp);
+          window.removeEventListener('touchmove', handleTouchMove);
+          window.removeEventListener('touchend', handleTouchEnd);
         };
       }
     }, [isDragging]);
 
-    const handleTouchStart = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const touch = e.touches[0];
-      setIsDragging(true);
-      startPosRef.current = { x: touch.clientX, y: touch.clientY };
-    };
-
-    const handleTouchMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const touch = e.touches[0];
-      const fieldElement = document.querySelector('.relative.w-full.aspect-\\[3\\/2\\]');
-      if (!fieldElement) return;
-      
-      const rect = fieldElement.getBoundingClientRect();
-      const deltaX = ((touch.clientX - startPosRef.current.x) / rect.width) * 100;
-      const deltaY = ((touch.clientY - startPosRef.current.y) / rect.height) * 100;
-      onMove(team, index, deltaX, deltaY);
-      startPosRef.current = { x: touch.clientX, y: touch.clientY };
-    };
-
-    const handleTouchEnd = () => {
-      setIsDragging(false);
-    };
-
     return (
       <div
-        className={`absolute flex flex-col items-center cursor-move select-none ${isDragging ? 'z-50' : 'z-10'}`}
+        className={`absolute flex flex-col items-center select-none ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}`}
         style={{ 
           left: `${player.x}%`, 
           top: `${player.y}%`,
           transform: 'translate(-50%, -50%)',
-          touchAction: 'none'
+          touchAction: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none'
         }}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
       >
         <div 
-          className={`w-10 h-10 rounded-full border-4 border-white shadow-lg ${
+          className={`w-10 h-10 rounded-full border-4 border-white shadow-lg transition-transform ${
             team === 'team1' ? 'bg-red-600' : 'bg-blue-600'
-          }`}
+          } ${isDragging ? 'scale-110' : 'scale-100'}`}
         />
-        <span className="text-white font-bold text-sm mt-1 bg-black bg-opacity-60 px-2 py-0.5 rounded whitespace-nowrap">
+        <span className="text-white font-bold text-xs mt-1 bg-black bg-opacity-70 px-2 py-0.5 rounded whitespace-nowrap shadow-md">
           {player.name}
         </span>
       </div>
@@ -263,8 +292,6 @@ function HalisahaKadro() {
                 ))}
               </div>
             </div>
-
-
           </div>
 
           <div className="lg:col-span-3 space-y-6">
@@ -336,7 +363,11 @@ function HalisahaKadro() {
 
             <div className="bg-gray-800 rounded-lg p-4">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Halı Saha</h3>
-              <div className="relative w-full aspect-[3/2] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-4 border-white">
+              <div 
+                ref={fieldRef}
+                className="relative w-full aspect-[3/2] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-4 border-white"
+                style={{ touchAction: 'none' }}
+              >
                 <div className="absolute top-0 left-1/2 w-0.5 h-full bg-white opacity-60"></div>
                 
                 <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white opacity-60 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
