@@ -1,5 +1,6 @@
 /* Global React hooks (React loaded via UMD) */
-const { useState, useEffect, useRef } = React;
+// DEĞİŞİKLİK: 'useCallback' hook'u eklendi.
+const { useState, useEffect, useRef, useCallback } = React;
 
 
 function Users(props) {
@@ -118,23 +119,26 @@ function HalisahaKadro() {
     const dragStartPos = useRef({ x: 0, y: 0 });
     const playerStartPos = useRef({ x: 0, y: 0 });
 
-    const getFieldRect = () => {
+    // DEĞİŞİKLİK: Fonksiyonlar 'useCallback' içine alındı.
+    const getFieldRect = useCallback(() => {
       if (fieldRef.current) {
         return fieldRef.current.getBoundingClientRect();
       }
       return null;
-    };
+    }, [fieldRef]); // fieldRef stabil olduğu için bu fonksiyon da stabil.
 
-    const handleStart = (clientX, clientY) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleStart = useCallback((clientX, clientY) => {
       const rect = getFieldRect();
       if (!rect) return;
       
       setIsDragging(true);
       dragStartPos.current = { x: clientX, y: clientY };
       playerStartPos.current = { x: player.x, y: player.y };
-    };
+    }, [getFieldRect, player.x, player.y, setIsDragging]); // Bağımlılıklar eklendi
 
-    const handleMove = (clientX, clientY) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleMove = useCallback((clientX, clientY) => {
       if (!isDragging) return;
       const rect = getFieldRect();
       if (!rect) return;
@@ -149,44 +153,52 @@ function HalisahaKadro() {
       const newY = playerStartPos.current.y + deltaYPercent;
       
       onMove(team, index, newX, newY);
-    };
+    }, [isDragging, getFieldRect, onMove, team, index]); // Bağımlılıklar eklendi
 
-    const handleEnd = () => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleEnd = useCallback(() => {
       setIsDragging(false);
-    };
+    }, [setIsDragging]); // Bağımlılık eklendi
 
     // Mouse events
-    const handleMouseDown = (e) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleMouseDown = useCallback((e) => {
       e.preventDefault();
       e.stopPropagation();
       handleStart(e.clientX, e.clientY);
-    };
+    }, [handleStart]); // Bağımlılık eklendi
 
-    const handleMouseMove = (e) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleMouseMove = useCallback((e) => {
+      e.preventDefault(); // Tarayıcı davranışını engellemek için eklendi.
       handleMove(e.clientX, e.clientY);
-    };
+    }, [handleMove]); // Bağımlılık eklendi
 
-    const handleMouseUp = () => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleMouseUp = useCallback(() => {
       handleEnd();
-    };
+    }, [handleEnd]); // Bağımlılık eklendi
 
     // Touch events
-    const handleTouchStart = (e) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleTouchStart = useCallback((e) => {
       e.preventDefault();
       e.stopPropagation();
       const touch = e.touches[0];
       handleStart(touch.clientX, touch.clientY);
-    };
+    }, [handleStart]); // Bağımlılık eklendi
 
-    const handleTouchMove = (e) => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleTouchMove = useCallback((e) => {
       e.preventDefault();
       const touch = e.touches[0];
       handleMove(touch.clientX, touch.clientY);
-    };
+    }, [handleMove]); // Bağımlılık eklendi
 
-    const handleTouchEnd = () => {
+    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
+    const handleTouchEnd = useCallback(() => {
       handleEnd();
-    };
+    }, [handleEnd]); // Bağımlılık eklendi
 
     useEffect(() => {
       if (isDragging) {
@@ -202,7 +214,8 @@ function HalisahaKadro() {
           window.removeEventListener('touchend', handleTouchEnd);
         };
       }
-    }, [isDragging]);
+      // DEĞİŞİKLİK: 'useEffect' bağımlılık dizisi (dependency array) güncellendi.
+    }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
     return (
       <div
@@ -216,6 +229,7 @@ function HalisahaKadro() {
           WebkitUserSelect: 'none',
           MozUserSelect: 'none'
         }}
+        // DEĞİŞİKLİK: Stabilize edilmiş handler'lar atandı.
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
