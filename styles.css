@@ -1,0 +1,4 @@
+
+/* You can put custom styles here. Most classes come from Tailwind (loaded via CDN). */
+html, body, #root { height: 100%; }
+body { margin: 0; background: #0b1220; }
