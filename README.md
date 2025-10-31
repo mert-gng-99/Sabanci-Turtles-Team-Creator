@@ -85,7 +85,6 @@ All dependencies are loaded via **CDN**, so no installation is required.
 Open `index.html` in your browser and start building teams!
 
 Default players include:
-- Ahmet, Mehmet, Ali, Veli, Can, Cem, etc.
 - Mert
 
 ---
