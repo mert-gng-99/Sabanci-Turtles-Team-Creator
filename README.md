@@ -87,7 +87,7 @@ Open `index.html` in your browser and start building teams\!
 
 Default players include:
 
-  - Mert.
+  - Ahmet, Mehmet, Ali, Veli, Can, Cem, etc.
 
 -----
 
@@ -113,3 +113,7 @@ All rights reserved.
 This software is the intellectual property of the original developer.
 Unauthorized use, reproduction, or distribution is strictly prohibited.
 For personal use only.
+```
+
+```
+```
