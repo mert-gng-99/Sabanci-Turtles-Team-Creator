@@ -1,10 +1,11 @@
+````markdown
 # 🐢 Sabancı Turtles Team Creator
 
 A fun and interactive web-based app designed to help **me and my friends easily create football (halı saha) teams**. This project was built for personal use to speed up the team formation process before matches and is **strictly licensed to prevent unauthorized use or duplication**.
 
 ## ⚠️ License
 
-**All rights reserved.**  
+**All rights reserved.**
 This project is **exclusive** to the owner and **may not be copied, distributed, or used by others** without explicit permission.
 
 ---
@@ -19,7 +20,7 @@ This project is **exclusive** to the owner and **may not be copied, distributed,
 - [Examples](#examples)
 - [Troubleshooting](#troubleshooting)
 - [Contributors](#contributors)
-- [License](#license)
+- [License](#license-1)
 
 ---
 
@@ -63,45 +64,46 @@ You can set the **default language** in the source code by changing:
 
 ```jsx
 const [language, setLanguage] = useState('tr'); // or 'en'
-```
+````
 
----
+-----
 
 ## 📦 Dependencies
 
 This project uses:
 
-- [React 18](https://reactjs.org/) (via UMD)
-- [ReactDOM 18](https://reactjs.org/)
-- [TailwindCSS](https://tailwindcss.com/) (via CDN)
-- [Babel Standalone](https://babeljs.io/docs/en/babel-standalone)
+  - [React 18](https://reactjs.org/) (via UMD)
+  - [ReactDOM 18](https://reactjs.org/)
+  - [TailwindCSS](https://tailwindcss.com/) (via CDN)
+  - [Babel Standalone](https://babeljs.io/docs/en/babel-standalone)
 
 All dependencies are loaded via **CDN**, so no installation is required.
 
----
+-----
 
 ## 🧪 Examples
 
-Open `index.html` in your browser and start building teams!
+Open `index.html` in your browser and start building teams\!
 
 Default players include:
-- Ahmet, Mehmet, Ali, Veli, Can, Cem, etc.
 
----
+  - Mert.
+
+-----
 
 ## 🧯 Troubleshooting
 
-- **JSX not compiling?** Ensure you're connected to the internet (Babel & React loaded via CDN).
-- **Nothing rendering?** Check browser console for syntax errors in `app.jsx`.
+  - **JSX not compiling?** Ensure you're connected to the internet (Babel & React loaded via CDN).
+  - **Nothing rendering?** Check browser console for syntax errors in `app.jsx`.
 
----
+-----
 
 ## 👤 Contributors
 
-- **Original Developer**: [mert-gng-99(me)](https://github.com/mert-gng-99) 🎉  
-  This project was made **by me, for my friends**, to simplify organizing football(Halı Saha) matches.
+  - **Original Developer**: [mert-gng-99(me)](https://github.com/mert-gng-99) 🎉
+    This project was made **by me, for my friends**, to simplify organizing football(Halı Saha) matches.
 
----
+-----
 
 ## 📄 License
 
@@ -111,6 +113,3 @@ All rights reserved.
 This software is the intellectual property of the original developer.
 Unauthorized use, reproduction, or distribution is strictly prohibited.
 For personal use only.
-```
-
----
