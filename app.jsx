@@ -1,6 +1,5 @@
 /* Global React hooks (React loaded via UMD) */
-// DEĞİŞİKLİK: 'useCallback' hook'u eklendi.
-const { useState, useEffect, useRef, useCallback } = React;
+const { useState, useEffect, useRef } = React;
 
 
 function Users(props) {
@@ -35,8 +34,7 @@ function HalisahaKadro() {
   const [newPlayer, setNewPlayer] = useState('');
   const [team1, setTeam1] = useState([]);
   const [team2, setTeam2] = useState([]);
-  const [draggedPlayer, setDraggedPlayer] = useState(null);
-  const [draggedFrom, setDraggedFrom] = useState(null);
+  const [selectedPlayer, setSelectedPlayer] = useState(null); // YENİ STATE
   const fieldRef = useRef(null);
 
   const addPlayer = () => {
@@ -45,33 +43,55 @@ function HalisahaKadro() {
       setNewPlayer('');
     }
   };
-
-  const handleDragStart = (player, from) => {
-    setDraggedPlayer(player);
-    setDraggedFrom(from);
+  
+  // YENİ FONKSİYON: Oyuncu seçmek için (listeden veya sahadan)
+  const handlePlayerSelect = (name, from, team = null, index = null) => {
+    // Eğer zaten seçili olan oyuncuya tekrar tıklanırsa, seçimi kaldır
+    if (selectedPlayer && selectedPlayer.name === name && selectedPlayer.from === from) {
+      setSelectedPlayer(null);
+    } else {
+      setSelectedPlayer({ name, from, team, index });
+    }
   };
 
-  const handleDrop = (target) => {
-    if (!draggedPlayer) return;
-
-    if (draggedFrom === 'players') {
-      setPlayers(players.filter(p => p !== draggedPlayer));
-    } else if (draggedFrom === 'team1') {
-      setTeam1(team1.filter(p => p.name !== draggedPlayer));
-    } else if (draggedFrom === 'team2') {
-      setTeam2(team2.filter(p => p.name !== draggedPlayer));
+  // YENİ FONKSİYON: Takım kutusuna tıklandığında
+  const handleTargetClick = (targetTeam) => {
+    // Sadece listeden bir oyuncu seçiliyse (from: 'players') işlem yap
+    if (!selectedPlayer || selectedPlayer.from !== 'players') {
+      // Eğer sahadan bir oyuncu seçiliyken buraya tıklanırsa, seçimi iptal et
+      if (selectedPlayer) setSelectedPlayer(null);
+      return;
     }
 
-    if (target === 'team1' && team1.length < 7) {
-      setTeam1([...team1, { name: draggedPlayer, x: 50, y: 50 }]);
-    } else if (target === 'team2' && team2.length < 7) {
-      setTeam2([...team2, { name: draggedPlayer, x: 50, y: 50 }]);
-    } else if (target === 'players') {
-      setPlayers([...players, draggedPlayer]);
+    const team = targetTeam === 'team1' ? team1 : team2;
+    const setTeam = targetTeam === 'team1' ? setTeam1 : setTeam2;
+
+    if (team.length < 7) {
+      setPlayers(players.filter(p => p !== selectedPlayer.name));
+      setTeam([...team, { name: selectedPlayer.name, x: 50, y: 50 }]); // Sahaya varsayılan pozisyonda ekle
+      setSelectedPlayer(null); // Seçimi sıfırla
+    }
+  };
+  
+  // YENİ FONKSİYON: Sahaya tıklandığında
+  const handleFieldClick = (e) => {
+    // Sadece sahadan bir oyuncu seçiliyse (from: 'field') işlem yap
+    if (!selectedPlayer || selectedPlayer.from !== 'field') {
+      // Eğer listeden bir oyuncu seçiliyken buraya tıklanırsa, seçimi iptal et
+      if (selectedPlayer) setSelectedPlayer(null);
+      return;
     }
 
-    setDraggedPlayer(null);
-    setDraggedFrom(null);
+    const rect = fieldRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const clickY = e.clientY - rect.top;
+    
+    // Yüzdesel pozisyonu hesapla
+    const newX = (clickX / rect.width) * 100;
+    const newY = (clickY / rect.height) * 100;
+
+    movePlayer(selectedPlayer.team, selectedPlayer.index, newX, newY);
+    setSelectedPlayer(null); // Seçimi sıfırla
   };
 
   const movePlayer = (team, index, newX, newY) => {
@@ -102,6 +122,7 @@ function HalisahaKadro() {
       setTeam2(team2.filter(p => p.name !== playerName));
       setPlayers([...players, playerName]);
     }
+    setSelectedPlayer(null); // Bir oyuncu silinirse seçimi iptal et
   };
 
   const clearTeam = (team) => {
@@ -112,131 +133,33 @@ function HalisahaKadro() {
       setPlayers([...players, ...team2.map(p => p.name)]);
       setTeam2([]);
     }
+    setSelectedPlayer(null); // Takım temizlenirse seçimi iptal et
   };
 
-  const FieldPlayer = ({ player, team, index, onMove }) => {
-    const [isDragging, setIsDragging] = useState(false);
-    const dragStartPos = useRef({ x: 0, y: 0 });
-    const playerStartPos = useRef({ x: 0, y: 0 });
-
-    // DEĞİŞİKLİK: Fonksiyonlar 'useCallback' içine alındı.
-    const getFieldRect = useCallback(() => {
-      if (fieldRef.current) {
-        return fieldRef.current.getBoundingClientRect();
-      }
-      return null;
-    }, [fieldRef]); // fieldRef stabil olduğu için bu fonksiyon da stabil.
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleStart = useCallback((clientX, clientY) => {
-      const rect = getFieldRect();
-      if (!rect) return;
-      
-      setIsDragging(true);
-      dragStartPos.current = { x: clientX, y: clientY };
-      playerStartPos.current = { x: player.x, y: player.y };
-    }, [getFieldRect, player.x, player.y, setIsDragging]); // Bağımlılıklar eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleMove = useCallback((clientX, clientY) => {
-      if (!isDragging) return;
-      const rect = getFieldRect();
-      if (!rect) return;
-
-      const deltaX = clientX - dragStartPos.current.x;
-      const deltaY = clientY - dragStartPos.current.y;
-      
-      const deltaXPercent = (deltaX / rect.width) * 100;
-      const deltaYPercent = (deltaY / rect.height) * 100;
-      
-      const newX = playerStartPos.current.x + deltaXPercent;
-      const newY = playerStartPos.current.y + deltaYPercent;
-      
-      onMove(team, index, newX, newY);
-    }, [isDragging, getFieldRect, onMove, team, index]); // Bağımlılıklar eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleEnd = useCallback(() => {
-      setIsDragging(false);
-    }, [setIsDragging]); // Bağımlılık eklendi
-
-    // Mouse events
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleMouseDown = useCallback((e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      handleStart(e.clientX, e.clientY);
-    }, [handleStart]); // Bağımlılık eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleMouseMove = useCallback((e) => {
-      e.preventDefault(); // Tarayıcı davranışını engellemek için eklendi.
-      handleMove(e.clientX, e.clientY);
-    }, [handleMove]); // Bağımlılık eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleMouseUp = useCallback(() => {
-      handleEnd();
-    }, [handleEnd]); // Bağımlılık eklendi
-
-    // Touch events
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleTouchStart = useCallback((e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const touch = e.touches[0];
-      handleStart(touch.clientX, touch.clientY);
-    }, [handleStart]); // Bağımlılık eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleTouchMove = useCallback((e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      handleMove(touch.clientX, touch.clientY);
-    }, [handleMove]); // Bağımlılık eklendi
-
-    // DEĞİŞİKLİK: Fonksiyon 'useCallback' içine alındı.
-    const handleTouchEnd = useCallback(() => {
-      handleEnd();
-    }, [handleEnd]); // Bağımlılık eklendi
-
-    useEffect(() => {
-      if (isDragging) {
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-        window.addEventListener('touchmove', handleTouchMove, { passive: false });
-        window.addEventListener('touchend', handleTouchEnd);
-        
-        return () => {
-          window.removeEventListener('mousemove', handleMouseMove);
-          window.removeEventListener('mouseup', handleMouseUp);
-          window.removeEventListener('touchmove', handleTouchMove);
-          window.removeEventListener('touchend', handleTouchEnd);
-        };
-      }
-      // DEĞİŞİKLİK: 'useEffect' bağımlılık dizisi (dependency array) güncellendi.
-    }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
-
+  // TAMAMEN YENİLENMİŞ VE BASİTLEŞTİRİLMİŞ FieldPlayer Component'i
+  const FieldPlayer = ({ player, team, index, onSelect, isSelected }) => {
     return (
       <div
-        className={`absolute flex flex-col items-center select-none ${isDragging ? 'z-50 cursor-grabbing' : 'z-10 cursor-grab'}`}
+        className={`absolute flex flex-col items-center select-none ${isSelected ? 'z-50' : 'z-10'} cursor-pointer`}
         style={{ 
           left: `${player.x}%`, 
           top: `${player.y}%`,
           transform: 'translate(-50%, -50%)',
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          MozUserSelect: 'none'
+          userSelect: 'none'
         }}
-        // DEĞİŞİKLİK: Stabilize edilmiş handler'lar atandı.
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
+        onClick={(e) => {
+          e.stopPropagation(); // Sahanın tıklanmasını engelle
+          onSelect(player.name, 'field', team, index);
+        }}
       >
         <div 
-          className={`w-10 h-10 rounded-full border-4 border-white shadow-lg transition-transform ${
+          className={`w-10 h-10 rounded-full shadow-lg transition-all ${
             team === 'team1' ? 'bg-red-600' : 'bg-blue-600'
-          } ${isDragging ? 'scale-110' : 'scale-100'}`}
+          } ${
+            isSelected 
+              ? 'ring-4 ring-yellow-400 scale-110' // Seçiliyken
+              : 'border-4 border-white scale-100' // Seçili değilken
+          }`}
         />
         <span className="text-white font-bold text-xs mt-1 bg-black bg-opacity-70 px-2 py-0.5 rounded whitespace-nowrap shadow-md">
           {player.name}
@@ -261,7 +184,10 @@ function HalisahaKadro() {
                   Oyuncular
                 </h2>
                 <button
-                  onClick={() => setPlayers([])}
+                  onClick={() => {
+                    setPlayers([]);
+                    setSelectedPlayer(null);
+                  }}
                   className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
                   title="Tüm oyuncuları sil"
                 >
@@ -288,22 +214,31 @@ function HalisahaKadro() {
               </div>
 
               <div className="space-y-2 max-h-96 overflow-y-auto">
-                {players.map((player, idx) => (
-                  <div
-                    key={idx}
-                    draggable
-                    onDragStart={() => handleDragStart(player, 'players')}
-                    className="bg-gray-700 text-white px-4 py-2 rounded cursor-move hover:bg-gray-600 transition flex justify-between items-center"
-                  >
-                    <span>{player}</span>
-                    <button
-                      onClick={() => setPlayers(players.filter((p) => p !== player))}
-                      className="text-red-400 hover:text-red-300 ml-2 text-xl"
+                {players.map((player, idx) => {
+                  const isSelected = selectedPlayer && selectedPlayer.from === 'players' && selectedPlayer.name === player;
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => handlePlayerSelect(player, 'players')} // DEĞİŞTİ
+                      className={`text-white px-4 py-2 rounded cursor-pointer transition flex justify-between items-center ${
+                        isSelected 
+                          ? 'bg-green-600 font-bold' // Seçiliyken
+                          : 'bg-gray-700 hover:bg-gray-600' // Seçili değilken
+                      }`}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                      <span>{player}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation(); // Oyuncu seçimini tetikleme
+                          setPlayers(players.filter((p) => p !== player));
+                        }}
+                        className="text-red-400 hover:text-red-300 ml-2 text-xl"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -311,14 +246,16 @@ function HalisahaKadro() {
           <div className="lg:col-span-3 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop('team1')}
-                className="bg-red-900 bg-opacity-30 border-2 border-red-600 rounded-lg p-4"
+                onClick={() => handleTargetClick('team1')} // DEĞİŞTİ
+                className="bg-red-900 bg-opacity-30 border-2 border-red-600 rounded-lg p-4 cursor-pointer" // cursor-pointer eklendi
               >
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-xl font-bold text-red-400">Takım 1 ({team1.length}/7)</h3>
                   <button
-                    onClick={() => clearTeam('team1')}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Takım kutusu click'ini tetikleme
+                      clearTeam('team1');
+                    }}
                     className="text-red-400 hover:text-red-300"
                   >
                     <Trash2 size={20} />
@@ -329,7 +266,10 @@ function HalisahaKadro() {
                     <div key={idx} className="flex justify-between items-center bg-red-800 bg-opacity-40 px-3 py-2 rounded">
                       <span className="text-white">{player.name}</span>
                       <button
-                        onClick={() => removeFromTeam('team1', player.name)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Takım kutusu click'ini tetikleme
+                          removeFromTeam('team1', player.name);
+                        }}
                         className="text-red-300 hover:text-red-200"
                       >
                         ×
@@ -337,20 +277,25 @@ function HalisahaKadro() {
                     </div>
                   ))}
                   {team1.length === 0 && (
-                    <p className="text-red-300 text-center py-4">Oyuncu sürükleyin</p>
+                    <p className="text-red-300 text-center py-4">
+                      {/* DEĞİŞTİ */}
+                      Oyuncu seçip buraya tıklayın
+                    </p>
                   )}
                 </div>
               </div>
 
               <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={() => handleDrop('team2')}
-                className="bg-blue-900 bg-opacity-30 border-2 border-blue-600 rounded-lg p-4"
+                onClick={() => handleTargetClick('team2')} // DEĞİŞTİ
+                className="bg-blue-900 bg-opacity-30 border-2 border-blue-600 rounded-lg p-4 cursor-pointer" // cursor-pointer eklendi
               >
                 <div className="flex justify-between items-center mb-3">
                   <h3 className="text-xl font-bold text-blue-400">Takım 2 ({team2.length}/7)</h3>
                   <button
-                    onClick={() => clearTeam('team2')}
+                    onClick={(e) => {
+                      e.stopPropagation(); // Takım kutusu click'ini tetikleme
+                      clearTeam('team2');
+                    }}
                     className="text-blue-400 hover:text-blue-300"
                   >
                     <Trash2 size={20} />
@@ -361,7 +306,10 @@ function HalisahaKadro() {
                     <div key={idx} className="flex justify-between items-center bg-blue-800 bg-opacity-40 px-3 py-2 rounded">
                       <span className="text-white">{player.name}</span>
                       <button
-                        onClick={() => removeFromTeam('team2', player.name)}
+                        onClick={(e) => {
+                          e.stopPropagation(); // Takım kutusu click'ini tetikleme
+                          removeFromTeam('team2', player.name);
+                        }}
                         className="text-blue-300 hover:text-blue-200"
                       >
                         ×
@@ -369,7 +317,10 @@ function HalisahaKadro() {
                     </div>
                   ))}
                   {team2.length === 0 && (
-                    <p className="text-blue-300 text-center py-4">Oyuncu sürükleyin</p>
+                    <p className="text-blue-300 text-center py-4">
+                      {/* DEĞİŞTİ */}
+                      Oyuncu seçip buraya tıklayın
+                    </p>
                   )}
                 </div>
               </div>
@@ -379,19 +330,21 @@ function HalisahaKadro() {
               <h3 className="text-xl font-bold text-white mb-4 text-center">Halı Saha</h3>
               <div 
                 ref={fieldRef}
-                className="relative w-full aspect-[3/2] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-4 border-white"
+                onClick={handleFieldClick} // DEĞİŞTİ
+                className={`relative w-full aspect-[3/2] bg-gradient-to-b from-green-600 to-green-700 rounded-lg overflow-hidden border-4 border-white ${
+                  selectedPlayer && selectedPlayer.from === 'field' ? 'cursor-crosshair' : '' // İmleci değiştir
+                }`}
                 style={{ touchAction: 'none' }}
               >
+                {/* ... (saha çizgileri aynı) ... */}
                 <div className="absolute top-0 left-1/2 w-0.5 h-full bg-white opacity-60"></div>
-                
                 <div className="absolute top-1/2 left-1/2 w-24 h-24 border-2 border-white opacity-60 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                 <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white opacity-60 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-
                 <div className="absolute top-1/2 left-0 w-16 h-32 border-2 border-t-white border-r-white border-b-white transform -translate-y-1/2 opacity-60"></div>
                 <div className="absolute top-1/2 left-0 w-8 h-20 border-2 border-t-white border-r-white border-b-white transform -translate-y-1/2 opacity-60"></div>
-
                 <div className="absolute top-1/2 right-0 w-16 h-32 border-2 border-t-white border-l-white border-b-white transform -translate-y-1/2 opacity-60"></div>
                 <div className="absolute top-1/2 right-0 w-8 h-20 border-2 border-t-white border-l-white border-b-white transform -translate-y-1/2 opacity-60"></div>
+
 
                 {team1.map((player, idx) => (
                   <FieldPlayer
@@ -399,7 +352,8 @@ function HalisahaKadro() {
                     player={player}
                     team="team1"
                     index={idx}
-                    onMove={movePlayer}
+                    onSelect={handlePlayerSelect} // DEĞİŞTİ
+                    isSelected={selectedPlayer && selectedPlayer.from === 'field' && selectedPlayer.index === idx && selectedPlayer.team === 'team1'} // DEĞİŞTİ
                   />
                 ))}
 
@@ -409,12 +363,14 @@ function HalisahaKadro() {
                     player={player}
                     team="team2"
                     index={idx}
-                    onMove={movePlayer}
+                    onSelect={handlePlayerSelect} // DEĞİŞTİ
+                    isSelected={selectedPlayer && selectedPlayer.from === 'field' && selectedPlayer.index === idx && selectedPlayer.team === 'team2'} // DEĞİŞTİ
                   />
                 ))}
               </div>
               <p className="text-gray-400 text-sm text-center mt-3">
-                💡 Oyuncuları saha içinde hareket ettirmek için tıklayıp sürükleyin
+                {/* DEĞİŞTİ */}
+                💡 Taşımak için oyuncuya, sonra sahada bir yere tıklayın
               </p>
             </div>
           </div>
