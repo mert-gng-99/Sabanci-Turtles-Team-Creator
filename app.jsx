@@ -1,5 +1,29 @@
 const { useState, useEffect, useRef } = React;
 
+const translations = {
+  tr: {
+    title: '🐢 SU Kadro Kurma',
+    fieldTitle: 'Halı Saha',
+    players: 'Oyuncular',
+    deleteAll: 'Hepsini Sil',
+    addPlayerPlaceholder: 'Oyuncu adı',
+    team1: 'Takım 1',
+    team2: 'Takım 2',
+    selectAndClick: 'Oyuncu seçip buraya tıklayın',
+    moveHint: '💡 Taşımak için oyuncuya, sonra sahada bir yere tıklayın'
+  },
+  en: {
+    title: '🐢 SU Team Builder',
+    fieldTitle: 'The Field',
+    players: 'Players',
+    deleteAll: 'Delete All',
+    addPlayerPlaceholder: 'Player name',
+    team1: 'Team 1',
+    team2: 'Team 2',
+    selectAndClick: 'Select a player and click here',
+    moveHint: '💡 Click a player, then click on the field to move'
+  }
+};
 
 function Users(props) {
   return React.createElement(
@@ -26,6 +50,9 @@ function Trash2(props) {
 
 
 function HalisahaKadro() {
+  const [language, setLanguage] = useState('tr');
+  const t = translations[language];
+
   const [players, setPlayers] = useState([
     'Ahmet', 'Mehmet', 'Ali', 'Veli', 'Can', 'Cem', 'Deniz', 'Emre',
     'Fatih', 'Hakan', 'İbrahim', 'Kerem', 'Murat', 'Oğuz'
@@ -158,10 +185,27 @@ function HalisahaKadro() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 p-4 relative">
+      <div className="absolute top-4 right-4 flex gap-2 z-20">
+        <button
+          onClick={() => setLanguage('tr')}
+          className={`text-2xl p-1 transition-all rounded-md ${language === 'tr' ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-100'}`}
+          title="Türkçe"
+        >
+          🇹🇷
+        </button>
+        <button
+          onClick={() => setLanguage('en')}
+          className={`text-2xl p-1 transition-all rounded-md ${language === 'en' ? 'ring-2 ring-white' : 'opacity-50 hover:opacity-100'}`}
+          title="English"
+        >
+          🇬🇧
+        </button>
+      </div>
+      
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-white text-center mb-8">
-          🐢 SU Kadro Kurma
+        <h1 className="text-4xl font-bold text-white text-center mb-8 pt-8 lg:pt-0">
+          {t.title}
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -170,7 +214,7 @@ function HalisahaKadro() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <Users size={24} />
-                  Oyuncular
+                  {t.players}
                 </h2>
                 <button
                   onClick={() => {
@@ -178,10 +222,10 @@ function HalisahaKadro() {
                     setSelectedPlayer(null);
                   }}
                   className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                  title="Tüm oyuncuları sil"
+                  title={t.deleteAll}
                 >
                   <Trash2 size={18} />
-                  <span className="text-sm font-semibold">Hepsini Sil</span>
+                  <span className="text-sm font-semibold">{t.deleteAll}</span>
                 </button>
               </div>
               
@@ -191,7 +235,7 @@ function HalisahaKadro() {
                   value={newPlayer}
                   onChange={(e) => setNewPlayer(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && addPlayer()}
-                  placeholder="Oyuncu adı"
+                  placeholder={t.addPlayerPlaceholder}
                   className="flex-1 px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 focus:outline-none focus:border-green-500"
                 />
                 <button
@@ -239,7 +283,7 @@ function HalisahaKadro() {
                 className="bg-red-900 bg-opacity-30 border-2 border-red-600 rounded-lg p-4 cursor-pointer"
               >
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-xl font-bold text-red-400">Takım 1 ({team1.length}/7)</h3>
+                  <h3 className="text-xl font-bold text-red-400">{t.team1} ({team1.length}/7)</h3>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -267,7 +311,7 @@ function HalisahaKadro() {
                   ))}
                   {team1.length === 0 && (
                     <p className="text-red-300 text-center py-4">
-                      Oyuncu seçip buraya tıklayın
+                      {t.selectAndClick}
                     </p>
                   )}
                 </div>
@@ -278,7 +322,7 @@ function HalisahaKadro() {
                 className="bg-blue-900 bg-opacity-30 border-2 border-blue-600 rounded-lg p-4 cursor-pointer"
               >
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-xl font-bold text-blue-400">Takım 2 ({team2.length}/7)</h3>
+                  <h3 className="text-xl font-bold text-blue-400">{t.team2} ({team2.length}/7)</h3>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -306,7 +350,7 @@ function HalisahaKadro() {
                   ))}
                   {team2.length === 0 && (
                     <p className="text-blue-300 text-center py-4">
-                      Oyuncu seçip buraya tıklayın
+                      {t.selectAndClick}
                     </p>
                   )}
                 </div>
@@ -314,7 +358,7 @@ function HalisahaKadro() {
             </div>
 
             <div className="bg-gray-800 rounded-lg p-4">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Halı Saha</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">{t.fieldTitle}</h3>
               <div 
                 ref={fieldRef}
                 onClick={handleFieldClick}
@@ -357,7 +401,7 @@ function HalisahaKadro() {
                 ))}
               </div>
               <p className="text-gray-400 text-sm text-center mt-3">
-                💡 Taşımak için oyuncuya, sonra sahada bir yere tıklayın
+                {t.moveHint}
               </p>
             </div>
           </div>
