@@ -1,7 +1,6 @@
-````markdown
 # 🐢 Sabancı Turtles Team Creator
 
-A fun and interactive web-based app designed to help **you and your friends easily create football (halı saha) teams**. This project was built for personal use to speed up the team formation process before matches and is **strictly licensed to prevent unauthorized use or duplication**.
+A fun and interactive web-based app designed to help **me and my friends easily create football (halı saha) teams**. This project was built for personal use to speed up the team formation process before matches and is **strictly licensed to prevent unauthorized use or duplication**.
 
 ## ⚠️ License
 
@@ -64,7 +63,7 @@ You can set the **default language** in the source code by changing:
 
 ```jsx
 const [language, setLanguage] = useState('tr'); // or 'en'
-````
+```
 
 ---
 
@@ -72,10 +71,10 @@ const [language, setLanguage] = useState('tr'); // or 'en'
 
 This project uses:
 
-* [React 18](https://reactjs.org/) (via UMD)
-* [ReactDOM 18](https://reactjs.org/)
-* [TailwindCSS](https://tailwindcss.com/) (via CDN)
-* [Babel Standalone](https://babeljs.io/docs/en/babel-standalone)
+- [React 18](https://reactjs.org/) (via UMD)
+- [ReactDOM 18](https://reactjs.org/)
+- [TailwindCSS](https://tailwindcss.com/) (via CDN)
+- [Babel Standalone](https://babeljs.io/docs/en/babel-standalone)
 
 All dependencies are loaded via **CDN**, so no installation is required.
 
@@ -86,22 +85,21 @@ All dependencies are loaded via **CDN**, so no installation is required.
 Open `index.html` in your browser and start building teams!
 
 Default players include:
-
-* Ahmet, Mehmet, Ali, Veli, Can, Cem, etc.
+- Ahmet, Mehmet, Ali, Veli, Can, Cem, etc.
 
 ---
 
 ## 🧯 Troubleshooting
 
-* **JSX not compiling?** Ensure you're connected to the internet (Babel & React loaded via CDN).
-* **Nothing rendering?** Check browser console for syntax errors in `app.jsx`.
+- **JSX not compiling?** Ensure you're connected to the internet (Babel & React loaded via CDN).
+- **Nothing rendering?** Check browser console for syntax errors in `app.jsx`.
 
 ---
 
 ## 👤 Contributors
 
-* **Original Developer**: *You* 🎉
-  This project was made **by Mert, for your friends**, to simplify organizing halı saha matches.
+- **Original Developer**: *You* 🎉  
+  This project was made **by me, for my friends**, to simplify organizing football(Halı Saha) matches.
 
 ---
 
@@ -116,6 +114,3 @@ For personal use only.
 ```
 
 ---
-
-```
-
