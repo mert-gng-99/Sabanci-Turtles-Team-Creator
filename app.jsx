@@ -77,8 +77,8 @@ function HalisahaKadro() {
   const t = translations[language];
 
   const [players, setPlayers] = useState([
-    'Ahmet', 'Mehmet', 'Ali', 'Veli', 'Can', 'Cem', 'Deniz', 'Emre',
-    'Fatih', 'Hakan', 'İbrahim', 'Kerem', 'Murat', 'Oğuz'
+    'Mert'
+    
   ]);
   const [newPlayer, setNewPlayer] = useState('');
   const [team1, setTeam1] = useState([]);
