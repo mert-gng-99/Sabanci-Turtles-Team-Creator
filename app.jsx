@@ -10,7 +10,10 @@ const translations = {
     team1: 'Takım 1',
     team2: 'Takım 2',
     selectAndClick: 'Oyuncu seçip buraya tıklayın',
-    moveHint: '💡 Taşımak için oyuncuya, sonra sahada bir yere tıklayın'
+    moveHint: '💡 Taşımak için oyuncuya, sonra sahada bir yere tıklayın',
+    downloadPNG: 'Saha Görüntüsü İndir',
+    copyRosters: 'Kadroları Kopyala',
+    copySuccess: 'Kadrolar kopyalandı!'
   },
   en: {
     title: '🐢 SU Team Builder',
@@ -21,7 +24,10 @@ const translations = {
     team1: 'Team 1',
     team2: 'Team 2',
     selectAndClick: 'Select a player and click here',
-    moveHint: '💡 Click a player, then click on the field to move'
+    moveHint: '💡 Click a player, then click on the field to move',
+    downloadPNG: 'Download Field Image',
+    copyRosters: 'Copy Rosters',
+    copySuccess: 'Rosters copied!'
   }
 };
 
@@ -47,6 +53,23 @@ function Trash2(props) {
   );
 }
 
+function Download(props) {
+  return React.createElement(
+    'svg',
+    { xmlns:'http://www.w3.org/2000/svg', viewBox:'0 0 24 24', width: props.size||20, height: props.size||20, fill:'none', stroke:'currentColor', 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round' },
+    React.createElement('path', { d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4' }),
+    React.createElement('polyline', { points: '7 10 12 15 17 10' }),
+    React.createElement('line', { x1: 12, y1: 15, x2: 12, y2: 3 })
+  );
+}
+function Copy(props) {
+  return React.createElement(
+    'svg',
+    { xmlns:'http://www.w3.org/2000/svg', viewBox:'0 0 24 24', width: props.size||20, height: props.size||20, fill:'none', stroke:'currentColor', 'stroke-width':2, 'stroke-linecap':'round', 'stroke-linejoin':'round' },
+    React.createElement('rect', { x: 9, y: 9, width: 13, height: 13, rx: 2, ry: 2 }),
+    React.createElement('path', { d: 'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1' })
+  );
+}
 
 
 function HalisahaKadro() {
@@ -61,6 +84,7 @@ function HalisahaKadro() {
   const [team1, setTeam1] = useState([]);
   const [team2, setTeam2] = useState([]);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [copyMessage, setCopyMessage] = useState('');
   const fieldRef = useRef(null);
 
   const addPlayer = () => {
@@ -150,6 +174,60 @@ function HalisahaKadro() {
       setPlayers([...players, ...team2.map(p => p.name)]);
       setTeam2([]);
     }
+    setSelectedPlayer(null);
+  };
+  
+  const handleDownloadPNG = () => {
+    if (fieldRef.current && typeof html2canvas !== 'undefined') {
+      const previouslySelected = selectedPlayer;
+      setSelectedPlayer(null);
+      
+      setTimeout(() => {
+        html2canvas(fieldRef.current, { 
+          useCORS: true, 
+          backgroundColor: null,
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'su-kadro.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          setSelectedPlayer(previouslySelected);
+        });
+      }, 100);
+    } else {
+      console.error("html2canvas is not loaded");
+    }
+  };
+  
+  const copyRostersToClipboard = () => {
+    const team1Title = t.team1;
+    const team2Title = t.team2;
+    
+    const team1List = team1.map(p => p.name).join('\n');
+    const team2List = team2.map(p => p.name).join('\n');
+    
+    const textToCopy = `${team1Title} (${team1.length}/7)\n${team1List || '-'}\n\n${team2Title} (${team2.length}/7)\n${team2List || '-'}`;
+    
+    const textArea = document.createElement('textarea');
+    textArea.value = textToCopy;
+    textArea.style.position = 'fixed';
+    textArea.style.top = '0';
+    textArea.style.left = '0';
+    textArea.style.opacity = '0';
+    
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      setCopyMessage(t.copySuccess);
+      setTimeout(() => setCopyMessage(''), 2000);
+    } catch (err) {
+      console.error('Kopyalama başarısız oldu', err);
+    }
+    
+    document.body.removeChild(textArea);
     setSelectedPlayer(null);
   };
 
@@ -400,9 +478,35 @@ function HalisahaKadro() {
                   />
                 ))}
               </div>
-              <p className="text-gray-400 text-sm text-center mt-3">
-                {t.moveHint}
-              </p>
+              
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-3">
+                <p className="text-gray-400 text-sm text-center">
+                  {t.moveHint}
+                </p>
+                <div className="flex gap-2 flex-shrink-0">
+                  <button
+                    onClick={handleDownloadPNG}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition text-sm"
+                  >
+                    <Download size={16} />
+                    {t.downloadPNG}
+                  </button>
+                  <button
+                    onClick={copyRostersToClipboard}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition text-sm"
+                  >
+                    <Copy size={16} />
+                    {t.copyRosters}
+                  </button>
+                </div>
+              </div>
+              
+              {copyMessage && (
+                <p className="text-green-400 text-sm text-center mt-2 font-bold">
+                  {copyMessage}
+                </p>
+              )}
+
             </div>
           </div>
         </div>
