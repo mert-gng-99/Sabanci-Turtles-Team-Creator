@@ -98,7 +98,7 @@ Default players include:
 
 ## 👤 Contributors
 
-- **Original Developer**: *You* 🎉  
+- **Original Developer**: *mert-gng(me)* 🎉  
   This project was made **by me, for my friends**, to simplify organizing football(Halı Saha) matches.
 
 ---
