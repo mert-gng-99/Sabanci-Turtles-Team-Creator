@@ -101,7 +101,7 @@ Default players include:
 ## 👤 Contributors
 
 * **Original Developer**: *You* 🎉
-  This project was made **by you, for your friends**, to simplify organizing halı saha matches.
+  This project was made **by Mert, for your friends**, to simplify organizing halı saha matches.
 
 ---
 
