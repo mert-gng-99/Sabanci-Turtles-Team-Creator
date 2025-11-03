@@ -237,7 +237,7 @@ function HalisahaKadro() {
         className={`absolute select-none ${isSelected ? 'z-50' : 'z-10'} cursor-pointer`}
         style={{ 
           left: `calc(${player.x}% - 20px)`, 
-          top: `calc(${player.y}% - 20px)`,
+          top: `calc(${player.y}% - 35px)`,
           userSelect: 'none'
         }}
         onClick={(e) => {
