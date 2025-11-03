@@ -234,11 +234,10 @@ function HalisahaKadro() {
   const FieldPlayer = ({ player, team, index, onSelect, isSelected }) => {
     return (
       <div
-        className={`absolute flex flex-col items-center select-none ${isSelected ? 'z-50' : 'z-10'} cursor-pointer`}
+        className={`absolute select-none ${isSelected ? 'z-50' : 'z-10'} cursor-pointer`}
         style={{ 
-          left: `${player.x}%`, 
-          top: `${player.y}%`,
-          transform: 'translate(-50%, -50%)',
+          left: `calc(${player.x}% - 20px)`, 
+          top: `calc(${player.y}% - 20px)`,
           userSelect: 'none'
         }}
         onClick={(e) => {
@@ -246,18 +245,20 @@ function HalisahaKadro() {
           onSelect(player.name, 'field', team, index);
         }}
       >
-        <div 
-          className={`w-10 h-10 rounded-full shadow-lg transition-all ${
-            team === 'team1' ? 'bg-red-600' : 'bg-blue-600'
-          } ${
-            isSelected 
-              ? 'ring-4 ring-yellow-400 scale-110'
-              : 'border-4 border-white scale-100'
-          }`}
-        />
-        <span className="text-white font-bold text-xs mt-1 bg-black bg-opacity-70 px-2 py-0.5 rounded whitespace-nowrap shadow-md">
-          {player.name}
-        </span>
+        <div className="flex flex-col items-center">
+          <div 
+            className={`w-10 h-10 rounded-full shadow-lg transition-all ${
+              team === 'team1' ? 'bg-red-600' : 'bg-blue-600'
+            } ${
+              isSelected 
+                ? 'ring-4 ring-yellow-400 scale-110'
+                : 'border-4 border-white scale-100'
+            }`}
+          />
+          <span className="text-white font-bold text-xs mt-1 bg-black bg-opacity-70 px-2 py-0.5 rounded whitespace-nowrap shadow-md" style={{ minWidth: 'max-content' }}>
+            {player.name}
+          </span>
+        </div>
       </div>
     );
   };
