@@ -77,7 +77,7 @@ function HalisahaKadro() {
   const t = translations[language];
 
   const [players, setPlayers] = useState([
-    'Mert'
+    'Mert','Orhun','Orkun','Arınç','Barkın','Kerem Alçı','Kıvanç','Yakup', 'Baha', 'Onat', 'Taha', 'Yusuf', 'Emin', 'İbrahim', 'Oktay'
     
   ]);
   const [newPlayer, setNewPlayer] = useState('');
