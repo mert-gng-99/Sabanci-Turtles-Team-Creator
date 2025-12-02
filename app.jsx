@@ -149,7 +149,7 @@ function HalisahaKadro() {
     { id: 14, name: 'Mirhat', pos: ['DEF'] },           //
     { id: 15, name: 'Kıvanç', pos: ['MID'] },           //
     { id: 16, name: 'Emir', pos: ['FWD'] },             //
-    { id: 17, name: 'Kerem S.', pos: ['DEF', 'MID'] },  // (Kerem Sabancı)
+    { id: 17, name: 'Kerem A.', pos: ['DEF', 'MID'] },  // (Kerem Sabancı)
     { id: 18, name: 'Taha', pos: ['GK', 'DEF'] },       //
     { id: 19, name: 'Orhun', pos: ['DEF'] },            //
     { id: 20, name: 'Yasin', pos: ['MID'] },            //
