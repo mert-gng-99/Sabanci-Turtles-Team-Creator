@@ -10,6 +10,10 @@ const translations = {
     players: 'Oyuncu Havuzu',
     deleteAll: 'Sıfırla',
     addPlayerPlaceholder: 'Oyuncu adı...',
+    updatePlayerPlaceholder: 'İsim düzenleniyor...',
+    addBtn: 'EKLE',
+    updateBtn: 'GÜNCELLE',
+    cancelBtn: 'İPTAL',
     team1: 'Takım 1 (Ev)',
     team2: 'Takım 2 (Dep)',
     moveHint: '💡 Yer değiştirmek için oyuncuya tıkla.',
@@ -47,6 +51,10 @@ const translations = {
     players: 'Player Pool',
     deleteAll: 'Reset',
     addPlayerPlaceholder: 'Player name...',
+    updatePlayerPlaceholder: 'Editing name...',
+    addBtn: 'ADD',
+    updateBtn: 'UPDATE',
+    cancelBtn: 'CANCEL',
     team1: 'Team 1 (Home)',
     team2: 'Team 2 (Away)',
     moveHint: '💡 Click player to move.',
@@ -88,6 +96,7 @@ const POSITIONS = [
 // --- Ikonlar ---
 const Icons = {
   UserPlus: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="8" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>,
+  UserEdit: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>,
   Trash: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-1 1-1h6c1 0 1 1 1 1v2"/></svg>,
   Download: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   Copy: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
@@ -130,33 +139,34 @@ function HalisahaKadro() {
   const [activeTab, setActiveTab] = useState('field'); // 'field' | 'leaderboard'
   const t = translations[language];
 
-  // Başlangıç verileri
-  // Başlangıç verileri - Ekran görüntülerinden alınan tam kadro
+  // Başlangıç verileri - Tam Kadro
   const [players, setPlayers] = useState([
-    { id: 1, name: 'Mert', pos: ['MID', 'FWD'] },       // Sen (Kaptan)
-    { id: 2, name: 'Barkın', pos: ['DEF'] },            //
-    { id: 3, name: 'Yakup', pos: ['MID'] },             //
-    { id: 4, name: 'Baha', pos: ['FWD'] },              //
-    { id: 5, name: 'Arınç', pos: ['DEF', 'MID'] },      //
-    { id: 6, name: 'Gökberk', pos: ['MID'] },           //
-    { id: 7, name: 'Alp Orkun', pos: ['FWD'] },         //
-    { id: 8, name: 'Onat', pos: ['DEF'] },              //
-    { id: 9, name: 'Mami', pos: ['MID', 'FWD'] },       //
-    { id: 10, name: 'Mehmet Ali', pos: ['DEF'] },       //
-    { id: 11, name: 'İbrahim', pos: ['MID'] },          //
-    { id: 12, name: 'Kerem Z.', pos: ['FWD'] },         // (Kerem Zeybek)
-    { id: 13, name: 'Oktay', pos: ['GK'] },             //
-    { id: 14, name: 'Mirhat', pos: ['DEF'] },           //
-    { id: 15, name: 'Kıvanç', pos: ['MID'] },           //
-    { id: 16, name: 'Emir', pos: ['FWD'] },             //
-    { id: 17, name: 'Kerem A.', pos: ['DEF', 'MID'] },  // (Kerem Sabancı)
-    { id: 18, name: 'Taha', pos: ['GK', 'DEF'] },       //
-    { id: 19, name: 'Orhun', pos: ['DEF'] },            //
-    { id: 20, name: 'Yasin', pos: ['MID'] },            //
-    { id: 21, name: 'Yusuf', pos: ['FWD'] },            // (Yuusf düzeltildi)
-    { id: 22, name: 'Hamid Emin', pos: ['MID'] }        //
+    { id: 1, name: 'Mert', pos: ['MID', 'FWD'] },       
+    { id: 2, name: 'Barkın', pos: ['DEF'] },            
+    { id: 3, name: 'Yakup', pos: ['MID'] },             
+    { id: 4, name: 'Baha', pos: ['FWD'] },              
+    { id: 5, name: 'Arınç', pos: ['DEF', 'MID'] },      
+    { id: 6, name: 'Gökberk', pos: ['MID'] },           
+    { id: 7, name: 'Alp Orkun', pos: ['FWD'] },         
+    { id: 8, name: 'Onat', pos: ['DEF'] },              
+    { id: 9, name: 'Mami', pos: ['MID', 'FWD'] },       
+    { id: 10, name: 'Mehmet Ali', pos: ['DEF'] },       
+    { id: 11, name: 'İbrahim', pos: ['MID'] },          
+    { id: 12, name: 'Kerem Z.', pos: ['FWD'] },         
+    { id: 13, name: 'Oktay', pos: ['GK'] },             
+    { id: 14, name: 'Mirhat', pos: ['DEF'] },           
+    { id: 15, name: 'Kıvanç', pos: ['MID'] },           
+    { id: 16, name: 'Emir', pos: ['FWD'] },             
+    { id: 17, name: 'Kerem A.', pos: ['DEF', 'MID'] },  
+    { id: 18, name: 'Taha', pos: ['GK', 'DEF'] },       
+    { id: 19, name: 'Orhun', pos: ['DEF'] },            
+    { id: 20, name: 'Yasin', pos: ['MID'] },            
+    { id: 21, name: 'Yusuf', pos: ['FWD'] },            
+    { id: 22, name: 'Hamid Emin', pos: ['MID'] }        
   ]);
   
+  // Düzenleme State'leri
+  const [editingId, setEditingId] = useState(null); // Düzenlenen oyuncu ID'si
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerPos, setNewPlayerPos] = useState(['MID']);
   const [filterPos, setFilterPos] = useState('ALL');
@@ -182,9 +192,7 @@ function HalisahaKadro() {
   // --- İstatistik Hesaplama (Leaderboard) ---
   const leaderboardData = useMemo(() => {
     const stats = {};
-
     matches.forEach(match => {
-      // Sadece skoru girilmiş maçları hesapla
       if(match.s1 === '' || match.s2 === '') return;
       const s1 = parseInt(match.s1);
       const s2 = parseInt(match.s2);
@@ -201,13 +209,14 @@ function HalisahaKadro() {
       match.t1.forEach(p => processPlayer(p, s1 > s2, isDraw));
       match.t2.forEach(p => processPlayer(p, s2 > s1, isDraw));
     });
-
     return Object.values(stats)
-      .sort((a, b) => b.win - a.win || b.played - a.played) // Önce galibiyet, sonra maç sayısı
+      .sort((a, b) => b.win - a.win || b.played - a.played)
       .map((item, index) => ({ ...item, rank: index + 1 }));
   }, [matches]);
 
   // --- Fonksiyonlar ---
+  
+  // Toggle Pozisyon (Ekleme ve Düzenleme için ortak)
   const toggleNewPlayerPos = (posId) => {
     if (newPlayerPos.includes(posId)) {
       if (newPlayerPos.length > 1) {
@@ -218,16 +227,41 @@ function HalisahaKadro() {
     }
   };
 
-  const addPlayer = () => {
-    if (newPlayerName.trim()) {
-      const newP = {
-        id: Date.now(),
-        name: newPlayerName.trim(),
-        pos: newPlayerPos
-      };
-      setPlayers([...players, newP]);
-      setNewPlayerName('');
+  // Oyuncu Ekleme veya Güncelleme
+  const savePlayer = () => {
+    if (!newPlayerName.trim()) return;
+
+    if (editingId) {
+       // GÜNCELLEME
+       setPlayers(players.map(p => p.id === editingId ? { ...p, name: newPlayerName.trim(), pos: newPlayerPos } : p));
+       cancelEdit();
+    } else {
+       // EKLEME
+       const newP = {
+         id: Date.now(),
+         name: newPlayerName.trim(),
+         pos: newPlayerPos
+       };
+       setPlayers([...players, newP]);
+       setNewPlayerName('');
+       setNewPlayerPos(['MID']); // Varsayılana dön
     }
+  };
+
+  // Düzenleme Modunu Başlat
+  const startEdit = (player) => {
+    setEditingId(player.id);
+    setNewPlayerName(player.name);
+    setNewPlayerPos(player.pos);
+    // Düzenleme sırasında havuz seçimini kaldır ki karışmasın
+    setSelectedObj(null);
+  };
+
+  // Düzenlemeyi İptal Et
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNewPlayerName('');
+    setNewPlayerPos(['MID']);
   };
 
   const getFilteredPlayers = () => {
@@ -236,6 +270,9 @@ function HalisahaKadro() {
   };
 
   const handleSelectFromPool = (player) => {
+    // Düzenleme modundaysak seçimi engelle veya iptal et
+    if (editingId) return;
+
     if (selectedObj && selectedObj.player.id === player.id) {
       setSelectedObj(null);
     } else {
@@ -325,36 +362,20 @@ function HalisahaKadro() {
       s2: ''
     };
     setMatches([newMatch, ...matches]);
-    setActiveTab('leaderboard'); // Maç bitince skora/tabloya yönlendir
+    setActiveTab('leaderboard'); 
   };
 
-  // --- MAÇI GERİ YÜKLEME ---
   const restoreMatch = (match) => {
     if(team1.length > 0 || team2.length > 0) {
       if(!confirm(t.restoreConfirm)) return;
     }
-    
-    // 1. Sahaya diz
     setTeam1([...match.t1]);
     setTeam2([...match.t2]);
-
-    // 2. Havuzu güncelle: Sahada olmayan herkes havuza
-    // Mevcut havuz + şu an sahada olanlar (eski) -> Hepsi potansiyel havuz
-    // Ancak basitlik için: Bu maçtaki oyuncuların ID'lerini al, havuzdan çıkar.
-    // Daha güvenli yöntem: Tüm bilinen oyunculardan sahadakileri çıkar.
-    
     const playersOnFieldIds = new Set([...match.t1, ...match.t2].map(p => p.id));
-    
-    // Geçici çözüm: Mevcut havuzdan bu ID'leri çıkar. 
-    // Not: Eğer havuzda olmayan bir oyuncu maç geçmişindeyse, havuza eklenmez (basit mantık).
     setPlayers(prevPlayers => {
-       // Önce sahadakileri havuza geri atıyormuş gibi düşünelim (reset)
-       // Sonra restore edilenleri çıkaralım.
-       // Bu örnekte basitçe: Mevcut havuzdan çakışanları siliyoruz.
        return prevPlayers.filter(p => !playersOnFieldIds.has(p.id));
     });
-    
-    setActiveTab('field'); // Sahaya git
+    setActiveTab('field'); 
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -389,7 +410,6 @@ function HalisahaKadro() {
       {/* Header & Tabs */}
       <div className="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
-          {/* Top Bar */}
           <div className="h-14 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xl md:text-2xl">🐢</span>
@@ -403,7 +423,6 @@ function HalisahaKadro() {
             </div>
           </div>
           
-          {/* Tab Menu */}
           <div className="flex gap-6 text-sm font-medium">
              <button 
                onClick={() => setActiveTab('field')}
@@ -431,22 +450,25 @@ function HalisahaKadro() {
               <div className="bg-slate-800/60 backdrop-blur border border-slate-700 rounded-xl p-3 md:p-4 shadow-xl flex flex-col max-h-[400px] lg:h-auto lg:max-h-[calc(100vh-120px)] lg:sticky lg:top-32">
                 <div className="flex items-center justify-between mb-3 flex-shrink-0">
                   <h2 className="font-bold text-white flex items-center gap-2 text-sm md:text-base">
-                    <Icons.UserPlus size={18} /> {t.players} <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">{players.length}</span>
+                    {editingId ? <Icons.UserEdit size={18} /> : <Icons.UserPlus size={18} />}
+                    {editingId ? 'Oyuncu Düzenle' : t.players}
+                    {!editingId && <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">{players.length}</span>}
                   </h2>
-                  {players.length > 0 && (
+                  {players.length > 0 && !editingId && (
                     <button onClick={() => setPlayers([])} className="text-rose-400 hover:text-rose-300 text-[10px] md:text-xs font-medium uppercase tracking-wide">
                       {t.deleteAll}
                     </button>
                   )}
                 </div>
 
-                <div className="flex-shrink-0 bg-slate-900/50 p-2 md:p-3 rounded-lg border border-slate-700/50 mb-3">
+                {/* Ekleme / Düzenleme Formu */}
+                <div className={`flex-shrink-0 p-2 md:p-3 rounded-lg border border-slate-700/50 mb-3 transition-colors ${editingId ? 'bg-amber-500/10 border-amber-500/50' : 'bg-slate-900/50'}`}>
                   <input 
                     type="text" 
                     value={newPlayerName}
                     onChange={e => setNewPlayerName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && addPlayer()}
-                    placeholder={t.addPlayerPlaceholder}
+                    onKeyDown={e => e.key === 'Enter' && savePlayer()}
+                    placeholder={editingId ? t.updatePlayerPlaceholder : t.addPlayerPlaceholder}
                     className="bg-transparent border-b border-slate-600 focus:border-indigo-500 outline-none text-base py-1 placeholder-slate-500 w-full mb-2 text-white"
                   />
                   <div className="flex gap-1 mb-2">
@@ -467,11 +489,20 @@ function HalisahaKadro() {
                       )
                     })}
                   </div>
-                  <button onClick={addPlayer} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded transition shadow-lg active:scale-95">
-                    EKLE
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={savePlayer} 
+                      className={`flex-1 text-white text-xs font-bold py-2 rounded transition shadow-lg active:scale-95 ${editingId ? 'bg-amber-600 hover:bg-amber-500' : 'bg-indigo-600 hover:bg-indigo-500'}`}
+                    >
+                      {editingId ? t.updateBtn : t.addBtn}
+                    </button>
+                    {editingId && (
+                       <button onClick={cancelEdit} className="px-3 bg-slate-700 hover:bg-slate-600 text-white rounded text-xs font-bold">✕</button>
+                    )}
+                  </div>
                 </div>
 
+                {/* Filtre */}
                 <div className="flex-shrink-0 flex gap-1 mb-2 overflow-x-auto pb-1 custom-scrollbar">
                   <button onClick={() => setFilterPos('ALL')} className={`px-3 py-1 rounded-full text-[10px] md:text-xs whitespace-nowrap border transition ${filterPos === 'ALL' ? 'bg-white text-slate-900 font-bold' : 'text-slate-400 border-slate-600'}`}>{t.filterAll}</button>
                   {POSITIONS.map(p => (
@@ -479,20 +510,39 @@ function HalisahaKadro() {
                   ))}
                 </div>
 
+                {/* Liste */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2 min-h-[150px]">
                   {getFilteredPlayers().map(player => {
                     const isSelected = selectedObj?.type === 'pool' && selectedObj.player.id === player.id;
+                    const isEditing = editingId === player.id;
                     return (
                       <div 
                         key={player.id}
                         onClick={() => handleSelectFromPool(player)}
-                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border transition-all duration-200 active:scale-[0.98] ${isSelected ? 'bg-indigo-600/20 border-indigo-500 shadow-md' : 'bg-slate-700/30 border-transparent hover:bg-slate-700/50'}`}
+                        className={`flex items-center justify-between p-2 rounded-lg cursor-pointer border transition-all duration-200 active:scale-[0.98] 
+                          ${isEditing ? 'bg-amber-500/20 border-amber-500' : (isSelected ? 'bg-indigo-600/20 border-indigo-500 shadow-md' : 'bg-slate-700/30 border-transparent hover:bg-slate-700/50')}
+                        `}
                       >
                         <div className="flex flex-col">
-                          <span className={`text-sm ${isSelected ? 'text-white font-semibold' : 'text-slate-300'}`}>{player.name}</span>
+                          <span className={`text-sm ${isSelected || isEditing ? 'text-white font-semibold' : 'text-slate-300'}`}>{player.name}</span>
                           <div className="flex mt-1">{player.pos.map(pid => <PosBadge key={pid} posId={pid} />)}</div>
                         </div>
-                        <button onClick={(e) => { e.stopPropagation(); setPlayers(players.filter(p => p.id !== player.id)); }} className="text-slate-500 hover:text-rose-400 p-2"><Icons.Trash size={16} /></button>
+                        <div className="flex items-center gap-1">
+                          {/* Düzenle Butonu */}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); startEdit(player); }} 
+                            className={`p-2 rounded hover:bg-slate-600 transition ${isEditing ? 'text-amber-400' : 'text-slate-500 hover:text-amber-300'}`}
+                          >
+                             <Icons.UserEdit size={16} />
+                          </button>
+                          {/* Sil Butonu */}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); setPlayers(players.filter(p => p.id !== player.id)); if(editingId===player.id) cancelEdit(); }} 
+                            className="text-slate-500 hover:text-rose-400 p-2 hover:bg-slate-600 rounded transition"
+                          >
+                            <Icons.Trash size={16} />
+                          </button>
+                        </div>
                       </div>
                     );
                   })}
@@ -583,8 +633,6 @@ function HalisahaKadro() {
         {/* --- TAB 2: LİDERLİK & GEÇMİŞ --- */}
         {activeTab === 'leaderboard' && (
           <div className="col-span-1 lg:col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* Liderlik Tablosu */}
             <div className="space-y-4">
                <h2 className="text-xl font-bold text-indigo-300 flex items-center gap-2"><Icons.Trophy /> {t.tabLeaderboard}</h2>
                <div className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg">
@@ -623,7 +671,6 @@ function HalisahaKadro() {
                </div>
             </div>
 
-            {/* Geçmiş Maçlar (Buraya Taşındı) */}
             <div className="space-y-4">
               <h2 className="text-xl font-bold flex items-center gap-2 text-indigo-300">
                 <Icons.History /> {t.matchHistory}
@@ -635,7 +682,6 @@ function HalisahaKadro() {
                   {matches.map(match => (
                     <div key={match.id} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-lg relative group">
                       <div className="absolute top-2 right-2 flex gap-2">
-                        {/* Restore Button */}
                         <button onClick={() => restoreMatch(match)} className="text-slate-500 hover:text-emerald-400 p-1.5 bg-slate-900/50 rounded" title={t.restoreMatch}>
                            <Icons.Refresh size={14} />
                         </button>
@@ -643,11 +689,9 @@ function HalisahaKadro() {
                            <Icons.Trash size={14} />
                         </button>
                       </div>
-                      
                       <div className="bg-slate-900/50 px-3 py-1.5 flex justify-between items-center text-[10px] md:text-xs text-slate-400">
                          <span>{match.date}</span>
                       </div>
-
                       <div className="p-3 grid grid-cols-12 gap-1 items-center">
                         <div className="col-span-5 text-right">
                           <h4 className="font-bold text-red-400 mb-1 text-xs">{t.team1}</h4>
@@ -655,7 +699,6 @@ function HalisahaKadro() {
                             {match.t1.map((p, i) => <span key={i} className="text-[9px] bg-slate-700 px-1 py-0.5 rounded text-slate-300 truncate max-w-[50px]">{p.name}</span>)}
                           </div>
                         </div>
-
                         <div className="col-span-2 flex flex-col items-center justify-center">
                           {editingScoreId === match.id ? (
                              <div className="flex items-center gap-1 bg-slate-900 p-1 rounded border border-indigo-500">
@@ -670,7 +713,6 @@ function HalisahaKadro() {
                             </div>
                           )}
                         </div>
-
                         <div className="col-span-5 text-left">
                           <h4 className="font-bold text-cyan-400 mb-1 text-xs">{t.team2}</h4>
                           <div className="flex flex-wrap justify-start gap-1">
@@ -685,7 +727,6 @@ function HalisahaKadro() {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );
