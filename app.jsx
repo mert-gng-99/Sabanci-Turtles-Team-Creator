@@ -131,12 +131,30 @@ function HalisahaKadro() {
   const t = translations[language];
 
   // Başlangıç verileri
+  // Başlangıç verileri - Ekran görüntülerinden alınan tam kadro
   const [players, setPlayers] = useState([
-    { id: 1, name: 'Mert', pos: ['MID', 'FWD'] },
-    { id: 2, name: 'Orhun', pos: ['DEF'] },
-    { id: 3, name: 'Oktay', pos: ['GK'] },
-    { id: 4, name: 'Hüseyin', pos: ['FWD'] },
-    { id: 5, name: 'Kaan', pos: ['DEF', 'MID'] }
+    { id: 1, name: 'Mert', pos: ['MID', 'FWD'] },       // Sen (Kaptan)
+    { id: 2, name: 'Barkın', pos: ['DEF'] },            //
+    { id: 3, name: 'Yakup', pos: ['MID'] },             //
+    { id: 4, name: 'Baha', pos: ['FWD'] },              //
+    { id: 5, name: 'Arınç', pos: ['DEF', 'MID'] },      //
+    { id: 6, name: 'Gökberk', pos: ['MID'] },           //
+    { id: 7, name: 'Alp Orkun', pos: ['FWD'] },         //
+    { id: 8, name: 'Onat', pos: ['DEF'] },              //
+    { id: 9, name: 'Mami', pos: ['MID', 'FWD'] },       //
+    { id: 10, name: 'Mehmet Ali', pos: ['DEF'] },       //
+    { id: 11, name: 'İbrahim', pos: ['MID'] },          //
+    { id: 12, name: 'Kerem Z.', pos: ['FWD'] },         // (Kerem Zeybek)
+    { id: 13, name: 'Oktay', pos: ['GK'] },             //
+    { id: 14, name: 'Mirhat', pos: ['DEF'] },           //
+    { id: 15, name: 'Kıvanç', pos: ['MID'] },           //
+    { id: 16, name: 'Emir', pos: ['FWD'] },             //
+    { id: 17, name: 'Kerem S.', pos: ['DEF', 'MID'] },  // (Kerem Sabancı)
+    { id: 18, name: 'Taha', pos: ['GK', 'DEF'] },       //
+    { id: 19, name: 'Orhun', pos: ['DEF'] },            //
+    { id: 20, name: 'Yasin', pos: ['MID'] },            //
+    { id: 21, name: 'Yusuf', pos: ['FWD'] },            // (Yuusf düzeltildi)
+    { id: 22, name: 'Hamid Emin', pos: ['MID'] }        //
   ]);
   
   const [newPlayerName, setNewPlayerName] = useState('');
