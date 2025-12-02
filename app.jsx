@@ -15,6 +15,7 @@ const translations = {
     downloadPNG: 'Görüntüyü İndir',
     copyRosters: 'Listeyi Kopyala',
     copySuccess: 'Kopyalandı!',
+    filterAll: 'Tümü',
     positions: {
       GK: 'Kaleci',
       DEF: 'Defans',
@@ -35,6 +36,7 @@ const translations = {
     downloadPNG: 'Download Image',
     copyRosters: 'Copy List',
     copySuccess: 'Copied!',
+    filterAll: 'All',
     positions: {
       GK: 'Goalkeeper',
       DEF: 'Defender',
@@ -51,36 +53,35 @@ const POSITIONS = [
   { id: 'FWD', label: 'FV', color: 'bg-rose-500', tr: 'Forvet' },
 ];
 
-// --- Ikonlar (Icons) ---
+// --- Ikonlar ---
 const Icons = {
   UserPlus: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="8" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>,
   Trash: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-1 1-1h6c1 0 1 1 1 1v2"/></svg>,
   Download: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
   Copy: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
-  Shield: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  Shield: ({size=20}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+  Filter: ({size=16}) => <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
 };
 
 // --- Yardımcı Fonksiyonlar ---
-// Mevkiye göre otomatik koordinat belirleme
-const getAutoPosition = (team, posId) => {
+const getAutoPosition = (team, posArray) => {
   const isTeam1 = team === 'team1';
-  // X ekseni: Team 1 soldan sağa, Team 2 sağdan sola
-  let x = 50;
-  let y = 50;
+  // Birincil mevkisini (ilk eklenen) baz al
+  const primaryPos = Array.isArray(posArray) && posArray.length > 0 ? posArray[0] : 'MID';
 
-  // Rastgelelik ekle ki üst üste binmesinler
+  let x = 50, y = 50;
   const jitter = () => (Math.random() - 0.5) * 10;
 
-  if (posId === 'GK') {
+  if (primaryPos === 'GK') {
     x = isTeam1 ? 5 : 95;
     y = 50;
-  } else if (posId === 'DEF') {
+  } else if (primaryPos === 'DEF') {
     x = isTeam1 ? 25 : 75;
-    y = 30 + Math.random() * 40; // Defans hattı boyunca dağıl
-  } else if (posId === 'MID') {
+    y = 30 + Math.random() * 40;
+  } else if (primaryPos === 'MID') {
     x = isTeam1 ? 45 : 55;
     y = 20 + Math.random() * 60;
-  } else if (posId === 'FWD') {
+  } else if (primaryPos === 'FWD') {
     x = isTeam1 ? 60 : 40;
     y = 50 + jitter();
   }
@@ -93,23 +94,37 @@ function HalisahaKadro() {
   const [language, setLanguage] = useState('tr');
   const t = translations[language];
 
-  // Oyuncular artık obje: { id, name, pos }
+  // Artık 'pos' bir ARRAY (Dizi) -> ['MID', 'FWD'] gibi
   const [players, setPlayers] = useState([
-    { id: 1, name: 'Mert', pos: 'MID' },
-    { id: 2, name: 'Orhun', pos: 'DEF' },
-    { id: 3, name: 'Oktay', pos: 'GK' },
-    { id: 4, name: 'Hüseyin', pos: 'FWD' }
+    { id: 1, name: 'Mert', pos: ['MID', 'FWD'] },
+    { id: 2, name: 'Orhun', pos: ['DEF'] },
+    { id: 3, name: 'Oktay', pos: ['GK'] },
+    { id: 4, name: 'Hüseyin', pos: ['FWD'] },
+    { id: 5, name: 'Kaan', pos: ['DEF', 'MID'] }
   ]);
   
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [newPlayerPos, setNewPlayerPos] = useState('MID');
-  
+  const [newPlayerPos, setNewPlayerPos] = useState(['MID']); // Varsayılan seçim
+  const [filterPos, setFilterPos] = useState('ALL'); // Filtre durumu
+
   const [team1, setTeam1] = useState([]);
   const [team2, setTeam2] = useState([]);
   
-  const [selectedObj, setSelectedObj] = useState(null); // { type: 'pool'|'field', team?, index?, player }
+  const [selectedObj, setSelectedObj] = useState(null);
   const [copyMessage, setCopyMessage] = useState('');
   const fieldRef = useRef(null);
+
+  // Mevki Toggle (Yeni oyuncu eklerken)
+  const toggleNewPlayerPos = (posId) => {
+    if (newPlayerPos.includes(posId)) {
+      // En az 1 tane kalmalı
+      if (newPlayerPos.length > 1) {
+        setNewPlayerPos(newPlayerPos.filter(p => p !== posId));
+      }
+    } else {
+      setNewPlayerPos([...newPlayerPos, posId]);
+    }
+  };
 
   // Oyuncu Ekleme
   const addPlayer = () => {
@@ -121,10 +136,16 @@ function HalisahaKadro() {
       };
       setPlayers([...players, newP]);
       setNewPlayerName('');
+      // Mevkileri sıfırlama, son seçilen kalsın kolaylık olsun
     }
   };
 
-  // Seçim Mantığı
+  // Filtreleme Mantığı
+  const getFilteredPlayers = () => {
+    if (filterPos === 'ALL') return players;
+    return players.filter(p => p.pos.includes(filterPos));
+  };
+
   const handleSelectFromPool = (player) => {
     if (selectedObj && selectedObj.player.id === player.id) {
       setSelectedObj(null);
@@ -134,78 +155,51 @@ function HalisahaKadro() {
   };
 
   const handleSelectFromField = (teamName, index, player) => {
-    // Sahadaki oyuncuyu seçip taşımak için
     setSelectedObj({ type: 'field', teamName, index, player });
   };
 
-  // Takıma Ekleme (Havuzdan veya Transfer)
   const addToTeam = (targetTeamName) => {
     if (!selectedObj) return;
-
     const targetSetTeam = targetTeamName === 'team1' ? setTeam1 : setTeam2;
     const targetTeamList = targetTeamName === 'team1' ? team1 : team2;
 
-    if (targetTeamList.length >= 7) return; // Maks 7 kişi
+    if (targetTeamList.length >= 7) return;
 
     if (selectedObj.type === 'pool') {
-      // Havuzdan ekle
       const { x, y } = getAutoPosition(targetTeamName, selectedObj.player.pos);
       const playerOnField = { ...selectedObj.player, x, y };
-      
       targetSetTeam([...targetTeamList, playerOnField]);
       setPlayers(players.filter(p => p.id !== selectedObj.player.id));
       setSelectedObj(null);
     } 
-    // İleride takımlar arası transfer de eklenebilir
   };
 
-  // Sahada Hareket Ettirme
   const handleFieldClick = (e) => {
     if (!selectedObj || selectedObj.type !== 'field') {
-      setSelectedObj(null); // Seçimi kaldır
+      setSelectedObj(null);
       return;
     }
-
     const rect = fieldRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
-
     const { teamName, index } = selectedObj;
     const teamList = teamName === 'team1' ? team1 : team2;
     const setTeam = teamName === 'team1' ? setTeam1 : setTeam2;
-
     const updated = [...teamList];
     updated[index] = { ...updated[index], x, y };
-    
     setTeam(updated);
     setSelectedObj(null);
   };
 
-  // Takımdan Çıkarma
   const removeFromTeam = (teamName, index) => {
     const list = teamName === 'team1' ? team1 : team2;
     const setList = teamName === 'team1' ? setTeam1 : setTeam2;
     const player = list[index];
-
-    // Havuza geri koy
     setPlayers([...players, { id: player.id, name: player.name, pos: player.pos }]);
-    // Takımdan sil
     setList(list.filter((_, i) => i !== index));
     setSelectedObj(null);
   };
 
-  const clearTeam = (teamName) => {
-    const list = teamName === 'team1' ? team1 : team2;
-    const setList = teamName === 'team1' ? setTeam1 : setTeam2;
-    
-    // Hepsini havuza geri at (koordinatları temizleyerek)
-    const returnedPlayers = list.map(p => ({ id: p.id, name: p.name, pos: p.pos }));
-    setPlayers([...players, ...returnedPlayers]);
-    setList([]);
-    setSelectedObj(null);
-  };
-
-  // Resim İndirme
   const handleDownload = () => {
     if (fieldRef.current) {
       const prevSelect = selectedObj;
@@ -213,7 +207,7 @@ function HalisahaKadro() {
       setTimeout(() => {
         html2canvas(fieldRef.current, { useCORS: true, backgroundColor: null }).then(canvas => {
           const link = document.createElement('a');
-          link.download = 'su-kadro-modern.png';
+          link.download = 'su-kadro-pro.png';
           link.href = canvas.toDataURL('image/png');
           link.click();
           setSelectedObj(prevSelect);
@@ -222,22 +216,21 @@ function HalisahaKadro() {
     }
   };
   
-  // Kopyalama
   const copyRosters = () => {
-    const text = `${t.team1}:\n${team1.map(p => `${p.name} (${p.pos})`).join('\n')}\n\n${t.team2}:\n${team2.map(p => `${p.name} (${p.pos})`).join('\n')}`;
+    // Kopyalarken birincil mevkisini yazalım
+    const formatP = p => `${p.name} (${p.pos.join('/')})`;
+    const text = `${t.team1}:\n${team1.map(formatP).join('\n')}\n\n${t.team2}:\n${team2.map(formatP).join('\n')}`;
     navigator.clipboard.writeText(text).then(() => {
       setCopyMessage(t.copySuccess);
       setTimeout(() => setCopyMessage(''), 2000);
     });
   };
 
-  // --- Render Parçaları ---
-  
-  // Pozisyon Badge'i
-  const PosBadge = ({ pos }) => {
-    const p = POSITIONS.find(x => x.id === pos) || POSITIONS[2];
+  // --- Küçük Bileşenler ---
+  const PosBadge = ({ posId }) => {
+    const p = POSITIONS.find(x => x.id === posId) || POSITIONS[2];
     return (
-      <span className={`${p.color} text-[10px] font-bold text-white px-1.5 py-0.5 rounded shadow-sm tracking-wider`}>
+      <span className={`${p.color} text-[9px] font-bold text-white px-1 py-0.5 rounded shadow-sm tracking-wide mr-1`}>
         {p.label}
       </span>
     );
@@ -264,10 +257,12 @@ function HalisahaKadro() {
 
       <div className="max-w-7xl mx-auto p-4 mt-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* SOL PANEL: Oyuncu Havuzu & Ekleme */}
+        {/* SOL PANEL: Oyuncu Havuzu */}
         <div className="lg:col-span-3 space-y-4">
-          <div className="bg-slate-800/60 backdrop-blur border border-slate-700 rounded-xl p-4 shadow-xl">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-slate-800/60 backdrop-blur border border-slate-700 rounded-xl p-4 shadow-xl flex flex-col h-full max-h-[calc(100vh-120px)]">
+            
+            {/* Başlık */}
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
               <h2 className="font-bold text-white flex items-center gap-2">
                 <Icons.UserPlus size={18} /> {t.players} <span className="text-xs bg-slate-700 px-2 py-1 rounded-full">{players.length}</span>
               </h2>
@@ -279,37 +274,70 @@ function HalisahaKadro() {
             </div>
 
             {/* Ekleme Formu */}
-            <div className="flex flex-col gap-2 mb-4 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+            <div className="flex-shrink-0 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 mb-4">
               <input 
                 type="text" 
                 value={newPlayerName}
                 onChange={e => setNewPlayerName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && addPlayer()}
                 placeholder={t.addPlayerPlaceholder}
-                className="bg-transparent border-b border-slate-600 focus:border-indigo-500 outline-none text-sm py-1 placeholder-slate-500 w-full transition-colors"
+                className="bg-transparent border-b border-slate-600 focus:border-indigo-500 outline-none text-sm py-1 placeholder-slate-500 w-full mb-3"
               />
-              <div className="flex gap-2">
-                <select 
-                  value={newPlayerPos} 
-                  onChange={e => setNewPlayerPos(e.target.value)}
-                  className="bg-slate-800 text-xs rounded border border-slate-600 px-2 py-1 outline-none focus:border-indigo-500"
-                >
-                  {POSITIONS.map(p => (
-                    <option key={p.id} value={p.id}>{p.id} - {p.tr}</option>
-                  ))}
-                </select>
-                <button 
-                  onClick={addPlayer}
-                  className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-1.5 rounded transition shadow-lg shadow-indigo-500/20"
-                >
-                  EKLE
-                </button>
+              {/* Çoklu Seçim Butonları */}
+              <div className="flex gap-1 mb-2">
+                {POSITIONS.map(p => {
+                  const isActive = newPlayerPos.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => toggleNewPlayerPos(p.id)}
+                      className={`flex-1 text-[10px] py-1 rounded border transition-colors
+                        ${isActive 
+                          ? `${p.color} border-transparent text-white shadow` 
+                          : 'bg-slate-800 border-slate-600 text-slate-400 hover:bg-slate-700'
+                        }`}
+                    >
+                      {p.label}
+                    </button>
+                  )
+                })}
               </div>
+              <button 
+                onClick={addPlayer}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-1.5 rounded transition shadow-lg shadow-indigo-500/20"
+              >
+                EKLE
+              </button>
             </div>
 
-            {/* Oyuncu Listesi */}
-            <div className="flex flex-col gap-2 max-h-[500px] overflow-y-auto custom-scrollbar">
-              {players.map(player => {
+            {/* FİLTRE MENU */}
+            <div className="flex-shrink-0 flex gap-1 mb-2 overflow-x-auto pb-1 custom-scrollbar">
+              <button 
+                onClick={() => setFilterPos('ALL')}
+                className={`px-3 py-1 rounded-full text-xs whitespace-nowrap border transition
+                  ${filterPos === 'ALL' 
+                    ? 'bg-white text-slate-900 border-white font-bold' 
+                    : 'bg-transparent text-slate-400 border-slate-600 hover:border-slate-400'}`}
+              >
+                {t.filterAll}
+              </button>
+              {POSITIONS.map(p => (
+                <button
+                  key={p.id}
+                  onClick={() => setFilterPos(p.id)}
+                  className={`px-3 py-1 rounded-full text-xs whitespace-nowrap border transition
+                    ${filterPos === p.id 
+                      ? `${p.color} border-transparent text-white font-bold` 
+                      : 'bg-transparent text-slate-400 border-slate-600 hover:border-slate-400'}`}
+                >
+                  {p.tr}
+                </button>
+              ))}
+            </div>
+
+            {/* Oyuncu Listesi (Scrollable) */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-2 min-h-0">
+              {getFilteredPlayers().map(player => {
                 const isSelected = selectedObj?.type === 'pool' && selectedObj.player.id === player.id;
                 return (
                   <div 
@@ -321,11 +349,14 @@ function HalisahaKadro() {
                         : 'bg-slate-700/30 border-transparent hover:bg-slate-700/50 hover:border-slate-600'
                       }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <PosBadge pos={player.pos} />
+                    <div className="flex flex-col">
                       <span className={`text-sm ${isSelected ? 'text-white font-semibold' : 'text-slate-300'}`}>
                         {player.name}
                       </span>
+                      {/* Badge Listesi */}
+                      <div className="flex mt-1">
+                        {player.pos.map(pid => <PosBadge key={pid} posId={pid} />)}
+                      </div>
                     </div>
                     <button 
                       onClick={(e) => { e.stopPropagation(); setPlayers(players.filter(p => p.id !== player.id)); }}
@@ -336,9 +367,9 @@ function HalisahaKadro() {
                   </div>
                 );
               })}
-              {players.length === 0 && (
+              {getFilteredPlayers().length === 0 && (
                 <div className="text-center py-8 text-slate-600 text-sm italic">
-                  Henüz oyuncu yok...
+                  Oyuncu bulunamadı...
                 </div>
               )}
             </div>
@@ -375,8 +406,6 @@ function HalisahaKadro() {
                 ))}
                 {team1.length === 0 && <span className="text-xs text-slate-500 w-full text-center py-2 border border-dashed border-slate-700 rounded">{t.selectAndClick}</span>}
               </div>
-              {/* Arka plan süsü */}
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
             </div>
 
             {/* TAKIM 2 */}
@@ -403,7 +432,6 @@ function HalisahaKadro() {
                 ))}
                 {team2.length === 0 && <span className="text-xs text-slate-500 w-full text-center py-2 border border-dashed border-slate-700 rounded">{t.selectAndClick}</span>}
               </div>
-              <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
             </div>
 
           </div>
@@ -431,7 +459,9 @@ function HalisahaKadro() {
               {/* OYUNCULAR: TAKIM 1 */}
               {team1.map((player, idx) => {
                  const isSel = selectedObj?.type === 'field' && selectedObj.teamName === 'team1' && selectedObj.index === idx;
-                 const posColor = POSITIONS.find(p => p.id === player.pos)?.color || 'bg-gray-500';
+                 // Sahada sadece birincil rengini gösteriyoruz karmaşa olmasın diye
+                 const mainPos = player.pos[0] || 'MID';
+                 const posColor = POSITIONS.find(p => p.id === mainPos)?.color || 'bg-gray-500';
                  
                  return (
                    <div 
@@ -444,8 +474,7 @@ function HalisahaKadro() {
                         ${isSel ? 'border-yellow-400 scale-125 ring-4 ring-yellow-400/30' : 'border-white group-hover:scale-110'}
                         ${posColor}
                      `}>
-                       {player.pos}
-                       {/* Takım belirteci halkası */}
+                       {mainPos}
                        <div className="absolute inset-0 rounded-full border-2 border-red-500 opacity-50"></div>
                      </div>
                      <span className="mt-1 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded shadow backdrop-blur-sm whitespace-nowrap">
@@ -458,7 +487,8 @@ function HalisahaKadro() {
               {/* OYUNCULAR: TAKIM 2 */}
               {team2.map((player, idx) => {
                  const isSel = selectedObj?.type === 'field' && selectedObj.teamName === 'team2' && selectedObj.index === idx;
-                 const posColor = POSITIONS.find(p => p.id === player.pos)?.color || 'bg-gray-500';
+                 const mainPos = player.pos[0] || 'MID';
+                 const posColor = POSITIONS.find(p => p.id === mainPos)?.color || 'bg-gray-500';
                  
                  return (
                    <div 
@@ -471,7 +501,7 @@ function HalisahaKadro() {
                         ${isSel ? 'border-yellow-400 scale-125 ring-4 ring-yellow-400/30' : 'border-white group-hover:scale-110'}
                         ${posColor}
                      `}>
-                       {player.pos}
+                       {mainPos}
                        <div className="absolute inset-0 rounded-full border-2 border-cyan-500 opacity-50"></div>
                      </div>
                      <span className="mt-1 text-[10px] font-bold text-white bg-black/60 px-2 py-0.5 rounded shadow backdrop-blur-sm whitespace-nowrap">
