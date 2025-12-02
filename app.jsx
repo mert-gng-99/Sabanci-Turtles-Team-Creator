@@ -539,7 +539,7 @@ function HalisahaKadro() {
                   onClick={handleFieldClick}
                   className={`relative w-full aspect-[1.6/1] md:aspect-[2.2/1] bg-gradient-to-br from-emerald-800 to-emerald-900 rounded-lg overflow-hidden border border-white/10 shadow-inner select-none touch-none ${selectedObj?.type === 'field' ? 'cursor-crosshair ring-2 ring-yellow-400/50' : ''}`}
                 >
-                  <h3 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full text-center text-white/10 font-bold text-3xl md:text-5xl uppercase tracking-widest pointer-events-none z-0">CHATV</h3>
+                  <h3 className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full text-center text-white/10 font-bold text-3xl md:text-5xl uppercase tracking-widest pointer-events-none z-0">MERT-GNG</h3>
                   {/* Çizgiler */}
                   <div className="absolute inset-3 md:inset-5 border-2 border-white/30 rounded-sm pointer-events-none"></div>
                   <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/30 transform -translate-x-1/2 pointer-events-none"></div>
