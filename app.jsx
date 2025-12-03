@@ -2,24 +2,6 @@ const { useState, useEffect, useRef, useMemo } = React;
 
 // --- FIREBASE AYARLARI ---
 // BURAYI KENDİ PROJE AYARLARINLA DEĞİŞTİR!
-const firebaseConfig = {
-
-  apiKey: "AIzaSyA4Cur5xhISCQu2C3aWNk3cYcb1TvqiHBU",
-
-  authDomain: "halisaha-28acf.firebaseapp.com",
-
-  projectId: "halisaha-28acf",
-
-  storageBucket: "halisaha-28acf.firebasestorage.app",
-
-  messagingSenderId: "84449822526",
-
-  appId: "1:84449822526:web:ee1b04faeeb3f4f4638e6f",
-
-  measurementId: "G-MS5D6MKQDH"
-
-};
-
 
 // Firebase'i Başlat
 let db;
